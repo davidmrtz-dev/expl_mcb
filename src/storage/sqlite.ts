@@ -10,6 +10,21 @@ export interface RepoRecord {
   indexedAt: string;
 }
 
+export interface StoredChunk {
+  id: number;
+  filePath: string;
+  symbolName: string;
+  symbolType: string;
+  startLine: number;
+  endLine: number;
+  content: string;
+}
+
+export interface ChunkWithVector {
+  chunk: StoredChunk;
+  vector: number[];
+}
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS repos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -113,6 +128,66 @@ export class IndexStore {
           vector_json = excluded.vector_json
       `)
       .run(chunkId, model, vector.length, JSON.stringify(vector));
+  }
+
+  getRepoByPath(repoPath: string): RepoRecord | null {
+    const row = this.db
+      .prepare("SELECT id, path, indexed_at FROM repos WHERE path = ?")
+      .get(path.resolve(repoPath)) as { id: number; path: string; indexed_at: string } | undefined;
+    if (!row) return null;
+    return { id: row.id, path: row.path, indexedAt: row.indexed_at };
+  }
+
+  /** Most recently indexed repo (for ask when --repo omitted). */
+  getLatestRepo(): RepoRecord | null {
+    const row = this.db
+      .prepare("SELECT id, path, indexed_at FROM repos ORDER BY indexed_at DESC LIMIT 1")
+      .get() as { id: number; path: string; indexed_at: string } | undefined;
+    if (!row) return null;
+    return { id: row.id, path: row.path, indexedAt: row.indexed_at };
+  }
+
+  listRepos(): RepoRecord[] {
+    const rows = this.db
+      .prepare("SELECT id, path, indexed_at FROM repos ORDER BY indexed_at DESC")
+      .all() as { id: number; path: string; indexed_at: string }[];
+    return rows.map((r) => ({ id: r.id, path: r.path, indexedAt: r.indexed_at }));
+  }
+
+  loadChunksWithVectors(repoId: number): ChunkWithVector[] {
+    const rows = this.db
+      .prepare(`
+        SELECT
+          c.id, c.file_path, c.symbol_name, c.symbol_type,
+          c.start_line, c.end_line, c.content,
+          e.vector_json
+        FROM chunks c
+        INNER JOIN embeddings e ON e.chunk_id = c.id
+        WHERE c.repo_id = ?
+      `)
+      .all(repoId) as {
+      id: number;
+      file_path: string;
+      symbol_name: string;
+      symbol_type: string;
+      start_line: number;
+      end_line: number;
+      content: string;
+      vector_json: string;
+    }[];
+
+    return rows.map((r) => ({
+      chunk: {
+        id: r.id,
+        filePath: r.file_path,
+        symbolName: r.symbol_name,
+        symbolType: r.symbol_type,
+        startLine: r.start_line,
+        endLine: r.end_line,
+        content: r.content,
+      },
+      vector: JSON.parse(r.vector_json) as number[],
+    }));
   }
 
   stats(repoId: number): { chunks: number; embeddings: number } {
