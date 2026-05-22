@@ -1,6 +1,6 @@
 # Explain My Codebase Agent — TODO incremental
 
-## FASE 1 — Indexación local ✅ (en progreso)
+## FASE 1 — Indexación local ✅
 
 - [x] Estructura de carpetas y arquitectura documentada
 - [x] Scanner de repo (TS/JS, ignores)
@@ -8,16 +8,16 @@
 - [x] Pipeline de embeddings vía Ollama (`nomic-embed-text`)
 - [x] Persistencia SQLite (chunks + vectores + metadata)
 - [x] CLI: `npm run index -- --repo <path>`
-- [x] Probar con un repo real y modelo Ollama instalado
 
-## FASE 2 — Preguntas con contexto
+## FASE 2 — Preguntas con contexto ✅
 
-- [ ] Servidor HTTP (Fastify) con `POST /ask`
-- [ ] Retrieval: cosine similarity sobre embeddings en SQLite
-- [ ] Context builder (top-k chunks + metadata de archivo)
-- [ ] Llamada a LLM local (`qwen2.5-coder:7b` o `deepseek-coder`)
-- [ ] Respuesta en streaming (SSE o chunked)
-- [ ] Script `npm run ask` y `npm run serve`
+- [x] Servidor HTTP (Fastify) con `POST /ask`
+- [x] Retrieval: cosine similarity sobre embeddings en SQLite
+- [x] Context builder (top-k chunks + metadata de archivo)
+- [x] Llamada a LLM local (`OLLAMA_CHAT_MODEL`)
+- [x] Respuesta en streaming (SSE + CLI stdout)
+- [x] Scripts `npm run ask` y `npm run serve`
+- [ ] Probar ask + serve con modelo de chat instalado
 
 ## FASE 3 — Comprensión estructural
 
