@@ -1,0 +1,27 @@
+{
+  "name": "explain-my-codebase-agent",
+  "version": "0.1.0",
+  "description": "Local agent to index and explain codebases using Ollama",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "index": "tsx src/cli.ts index",
+    "index:build": "npm run build && node dist/cli.js index",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20 <23"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-javascript": "^0.23.1",
+    "tree-sitter-typescript": "^0.23.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
